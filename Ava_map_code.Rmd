@@ -1,0 +1,61 @@
+---
+title: "ECBC Bass '24"
+author: "Ava Bailey"
+date: "2024-04-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("tidyverse")
+library(tidyverse)
+#install.packages("sf")
+library(sf)
+#install.packages("mapview")
+library(mapview)
+```
+
+```{r}
+eng_locations <- read_csv("bass spreadsheets/Ships_England.csv", show_col_types = FALSE) |>
+  glimpse()
+```
+
+```{r}
+mapview(eng_locations, xcol = "eng_long", ycol = "eng_lat", zcol = "Locations (freq.)", crs = 4269, grid = FALSE)
+
+England <- st_as_sf(eng_locations, coords = c("eng_long", "eng_lat"),  crs = 4326)
+eng_map = mapview(England, zcol = "Locations (freq.)") #map.types = "CartoDB.DarkMatter")
+library(htmlwidgets)
+mapshot(eng_map, url = 'Ava_England_map.html')
+```
+
+```{r}
+col_locations <- read_csv("bass spreadsheets/Ships_Colonies.csv", show_col_types = FALSE) |>
+  glimpse()
+```
+
+```{r}
+mapview(col_locations, xcol = "col_long", ycol = "col_lat", zcol = "Locations (freq.)", crs = 4269, grid = FALSE)
+
+Colonies <- st_as_sf(col_locations, coords = c("col_long", "col_lat"), crs = 4326)
+col_map = mapview(Colonies, zcol = "Locations (freq.)") #map.types = "CartoDB.DarkMatter") 
+library(htmlwidgets)
+mapshot(col_map, url = 'Ava_Colonies_map.html')
+```
+
+```{r}
+all_locations <- read_csv("bass spreadsheets/Ships_full_map.csv", show_col_types = FALSE) |>
+  glimpse()
+```
+
+```{r}
+all_locations$jittered_long <- all_locations$long + runif(nrow(all_locations), min = -0.1, max = 0.1)
+
+all_locations$jittered_lat <- all_locations$lat + runif(nrow(all_locations), min = -0.1, max = 0.1)
+
+Locations <- st_as_sf(all_locations, coords = c("jittered_long", "jittered_lat"), crs = 4326)
+
+mapview(Locations, zcol = "Ship") # map.types = "CartoDB.DarkMatter") 
+library(htmlwidgets)
+mapshot(all_map, url = 'Ava_Full_map_0_1.html')
+```
