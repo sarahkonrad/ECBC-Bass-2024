@@ -1,0 +1,136 @@
+---
+title: "ECBC Bass '24"
+author: "Sarah Konrad"
+date: "2024-04-08"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+#install.packages("tidyverse")
+library(tidyverse)
+#install.packages("sf")
+library(sf)
+#install.packages("mapview")
+library(mapview)
+```
+
+```{r, echo=FALSE, results=FALSE, message=FALSE}
+immigrant_laborers <- read_csv("bass spreadsheets/Geocomputation Spreadsheet - Definitive Labor.csv", show_col_types = FALSE)
+```
+
+Use the interactive zoom and scroll features to better acquaint yourselves with the maps we've created. This first map shows the known ancestral English locations that many of the early Virginia Company's young professionals came from in the year 1622. The key tells you their professions. Notably, there is a student from Oxford, a winemaker (vinter) from the north, and a cluster of husbandman from the south.
+```{r, echo=FALSE}
+mapview(immigrant_laborers, xcol = "long", ycol = "lat", zcol = "profession", crs = 4269, grid = FALSE)
+
+labor_sf <- st_as_sf(immigrant_laborers, coords = c("long", "lat"),  crs = 4326)
+#mapview(labor_sf, zcol = "profession", map.types = "CartoDB.DarkMatter") 
+```
+
+```{r, echo=FALSE}
+immigrant_children <- read_csv("bass spreadsheets/Geocomputation Spreadsheet - Children From London.csv", show_col_types = FALSE) |>
+  select("Name", "Gender", "Location brought from", "lat", "long") |>
+  mutate(Gender = ifelse(is.na(Gender), "Unknown", Gender)) 
+  #glimpse()
+```
+As stated on our Powerpoint, a large part of the early indentured labor in Virginia was provided by children who were shipped from Bridewell Hospital, a hybrid institution between orphanage, hospital, and prison. The massive yellow cluster shows those shipped from Bridewell who have little else listed in the historical record other than their names. However, the other locations in London indicate where Bridewell constables found these soon-to-be-indentured children throughout the city. We've used a jitter functionality to show the cluster, which means that locations are slightly shifted (hence the children in the river), though still very geographically close to where they were found in the city. 
+```{r, echo=FALSE}
+immigrant_children$jittered_long <- immigrant_children$long + runif(nrow(immigrant_children), min = -0.001, max = 0.001)
+
+immigrant_children$jittered_lat <- immigrant_children$lat + runif(nrow(immigrant_children), min = -0.001, max = 0.001)
+
+children_sf <- st_as_sf(immigrant_children, coords = c("jittered_long", "jittered_lat"), crs =4326)
+
+mapview(children_sf, zcol = "Gender", map.types = "CartoDB")
+```
+
+```{r, echo=FALSE}
+enslaved_laborers <- read_csv("bass spreadsheets/Geocomputation Spreadsheet - Enslaved in Virginia, 1624.csv", show_col_types = FALSE) 
+  #glimpse()
+```
+Little is known about the lives of the first Africans in colonial Virginia. The first who came to Virginia in 1619 had been taken from Angola in West Central Africa. They were captured in a series of wars that was part of much broader Portuguese hostilities against the Kongo and Ndongo kingdoms, and other states. These captives were then forced to march 100-200 miles to the coast to the major slave-trade port of Luanda. They were put on board the San Juan Bautista, which carried 350 captives bound for Vera Cruz, on the coast of Mexico, in the summer of 1619.
+
+Nearing her destination, the slave ship was attacked by two English privateers, the White Lion and the Treasurer, in the Gulf of Mexico and robbed of 50-60 Africans. The two privateers then sailed to Virginia where the White Lion arrived at Point Comfort, or present-day Hampton, Virginia, toward the end of August. John Rolfe, a prominent planter and merchant (and formerly the husband of Pocahontas), reported that “20. and odd Negroes” were “bought for victuals.” The majority of the Angolans were acquired by wealthy and well-connected English planters including Governor Sir George Yeardley and the cape, or head, merchant, Abraham Piersey. The Africans were sold into bondage despite Virginia having no clear-cut laws sanctioning slavery.
+
+The terms of their bondage is unclear, whether they were indentured or enslaved, as racialized plantation slavery had not yet become firmly entrenched and would not do so until the end of the 16th and early 17th centuries. They likely lived in similar conditions to indentured servants, and the terms of their possible freedom or unfreedom are still murky to historians. 
+
+Here, you can see the clusters of Africans in Virginia from the historical record, with major clusters in Hog's Head and Piersey's Hundred, the two major plantations. The rest of the population of Africans was spread out more diffusely across the colony. Most notably, there was a family in Elizabeth City, Virginia Colony in 1624 (modern day NC), composed of Isabella, Anthony (formerly Antonio) and their 1 year old son, William. 
+```{r, echo=FALSE}
+
+enslaved_laborers$jittered_long <- enslaved_laborers$long + runif(nrow(enslaved_laborers), min = -0.05, max = 0.05)
+
+enslaved_laborers$jittered_lat <- enslaved_laborers$lat + runif(nrow(enslaved_laborers), min = -0.05, max = 0.05)
+
+enslaved_sf <- st_as_sf(enslaved_laborers, coords = c("jittered_long", "jittered_lat"), crs =4326)
+#mapview(enslaved_sf, zcol = "gender", map.types = "CartoDB.DarkMatter")
+
+mapview(enslaved_sf, zcol = "gender", map.types = "CartoDB")
+```
+
+```{r, echo=FALSE, message=FALSE}
+speculative_servants <- read_csv("bass spreadsheets/Geocomputation Spreadsheet - Speculative Servants.csv", show_col_types = TRUE) |>
+  na.omit() 
+  #glimpse()
+```
+
+```{r, echo=FALSE, results=FALSE}
+mapview(speculative_servants, xcol = "long", ycol = "lat", zcol = "year of arrival", crs = 4269, grid = FALSE)
+mapview(speculative_servants, xcol = "long", ycol = "lat", zcol = "age", crs = 4269, grid = FALSE)
+
+servant_sf <- st_as_sf(speculative_servants, coords = c("long", "lat"),  crs = 4326)
+#mapview(servant_sf, zcol = "year of arrival", map.types = "CartoDB.DarkMatter") 
+
+```
+Tracking where in England indentured individuals came from is not an entirely precise endeavor. However, using backtracing methodologies that match baptismal, immigration, and colonial records, this map depicts the locations in England that known indentured servants were likely to have come from. These two maps depict the ages of these indentured servants, most of which were young children, teenagers, or young adults. These populations were clustered in the south and east, suggesting economic conditions in those regions that compelled migration. 
+```{r, echo=FALSE}
+speculative_servants$jittered_long <- speculative_servants$long + runif(nrow(speculative_servants), min = -0.05, max = 0.05)
+
+speculative_servants$jittered_lat <- speculative_servants$lat + runif(nrow(speculative_servants), min = -0.05, max = 0.05)
+
+servant_sf <- st_as_sf(speculative_servants, coords = c("jittered_long", "jittered_lat"), crs =4326)
+mapview(servant_sf, zcol = "age", map.types = "CartoDB")
+mapview(servant_sf, zcol = "year of arrival", map.types = "CartoDB")
+```
+
+The following maps depict where in England and Virgina, ships departed or arrived. Please scroll to find certain locations and understand patterns of migration. 
+```{r, echo=FALSE}
+eng_locations <- read_csv("bass spreadsheets/Ships_England.csv", show_col_types = FALSE)
+  #glimpse()
+```
+
+```{r, echo=FALSE}
+mapview(eng_locations, xcol = "eng_long", ycol = "eng_lat", zcol = "Locations (freq.)", crs = 4269, grid = FALSE)
+
+England <- st_as_sf(eng_locations, coords = c("eng_long", "eng_lat"),  crs = 4326)
+eng_map = mapview(England, zcol = "Locations (freq.)") #map.types = "CartoDB")
+#library(htmlwidgets)
+#mapshot(eng_map, url = 'Ava_England_map.html')
+```
+
+```{r, echo=FALSE}
+col_locations <- read_csv("bass spreadsheets/Ships_Colonies.csv", show_col_types = FALSE)
+ # glimpse()
+```
+
+```{r, echo=FALSE}
+mapview(col_locations, xcol = "col_long", ycol = "col_lat", zcol = "Locations (freq.)", crs = 4269, grid = FALSE)
+
+Colonies <- st_as_sf(col_locations, coords = c("col_long", "col_lat"), crs = 4326)
+col_map = mapview(Colonies, zcol = "Locations (freq.)") #map.types = "CartoDB") 
+#library(htmlwidgets)
+#mapshot(col_map, url = 'Ava_Colonies_map.html')
+```
+
+```{r, echo=FALSE}
+all_locations <- read_csv("bass spreadsheets/Ships_full_map.csv", show_col_types = FALSE) 
+  #glimpse()
+```
+
+```{r, echo=FALSE}
+all_locations$jittered_long <- all_locations$long + runif(nrow(all_locations), min = -0.1, max = 0.1)
+
+all_locations$jittered_lat <- all_locations$lat + runif(nrow(all_locations), min = -0.1, max = 0.1)
+
+Locations <- st_as_sf(all_locations, coords = c("jittered_long", "jittered_lat"), crs = 4326)
+
+mapview(Locations, zcol = "Ship") # map.types = "CartoDB") 
